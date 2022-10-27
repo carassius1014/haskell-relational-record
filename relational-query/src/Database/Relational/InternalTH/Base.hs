@@ -25,7 +25,7 @@ import Language.Haskell.TH
   (Q, Name, mkName, normalB, varP,
    TypeQ, forallT, varT, tupleT, appT,
    Dec, sigD, valD, instanceD,
-   TyVarBndr (PlainTV), )
+   TyVarBndr (PlainTV), Specificity (InferredSpec))
 import Language.Haskell.TH.Compat.Constraint (classP)
 import Database.Record.Persistable
   (PersistableWidth, persistableWidth,
@@ -59,7 +59,7 @@ defineRecordProjections tyRec avs sels cts =
     template :: TypeQ -> [TypeQ] -> Name -> Q [Dec]
     template ct pcts selN = do
       sig <- sigD selN $
-             forallT (map PlainTV avs)
+             forallT (map (flip PlainTV InferredSpec) avs)
              (mapM (classP ''PersistableWidth . (:[]) . varT) avs)
              [t| Pi $tyRec $ct |]
       let runPW t = [| runPersistableRecordWidth (persistableWidth :: PersistableRecordWidth $t) |]
